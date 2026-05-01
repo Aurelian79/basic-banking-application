@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.util.ArrayDeque;
 import java.util.Properties;
 
+
+
 public class DBConnection {
 
     // Creates a singelton of instance of whole class that manages the connection
@@ -15,7 +17,7 @@ public class DBConnection {
     // an arraydeque that stores instances of connection
     private ArrayDeque<Connection> pool;
 
-    //constructor of thid class
+    //constructor of this class
     private  DBConnection() {
 
         try {
@@ -26,16 +28,16 @@ public class DBConnection {
             //properties class is used to hold key value pairs
             Properties props = new Properties();
 
-            //takes the data from resources folder and db.properties file .returns it as a stream
+            //takes the data from resources folder and db.properties file returns it as a stream
             InputStream is = getClass().getClassLoader().getResourceAsStream("db.properties");
 
             //reads file and loads the data into memory
             props.load(is);
 
 
-            String url = firstNonBlank(System.getenv("DB_URL"), props.getProperty("db.url"));
-            String user = firstNonBlank(System.getenv("DB_USERNAME"), props.getProperty("db.username"));
-            String pass = firstNonBlank(System.getenv("DB_PASSWORD"), props.getProperty("db.password"));
+            String url = props.getProperty("db.url");
+            String user = props.getProperty("db.username");
+            String pass = props.getProperty("db.password");
             int poolSize = Integer.parseInt(props.getProperty("db.pool.size"));
 
             Class.forName("org.postgresql.Driver");
@@ -49,18 +51,13 @@ public class DBConnection {
             System.out.println("Db connection pool created with connection size " + poolSize);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error initializing DB COnnection" + e);
+            throw new RuntimeException("Error initializing DB Connection" + e);
         }
     }
 
-    private String firstNonBlank(String primary, String fallback) {
-        if (primary != null && !primary.trim().isEmpty()) {
-            return primary;
-        }
-        return fallback;
-    }
 
-    //
+
+    //returns instance of DBConnection class if it does not exist makes a new one and returns it
     public static synchronized DBConnection getInstance(){
         if (instance ==  null){
              instance = new DBConnection();

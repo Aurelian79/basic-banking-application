@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class AuditLog {
     private int logId;
     private int userId;
-    private String action;  //login ,transer,loan_apply
+    private String action;  //login ,transfer,loan_apply
     private String entity;
     private int entityId;
     private String ipAddress;
