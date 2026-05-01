@@ -68,7 +68,7 @@ public class ReportServlet extends BaseServlet {
             throw new Exception("'from' date cannot be after 'to' date");
 
         // Generate the CSV file — ReportService writes it to disk
-        String filePath = service.generateStatement(accountId, from, to);
+        String filePath = service.generateStatement(user, accountId, from, to);
 
         // Stream the file bytes back as a download
         File file = new File(filePath);

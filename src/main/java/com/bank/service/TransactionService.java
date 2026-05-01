@@ -7,6 +7,8 @@ import com.bank.dao.TransactionDAO;
 import com.bank.exception.BankException;
 import com.bank.model.Account;
 import com.bank.model.Transaction;
+import com.bank.model.User;
+import com.bank.util.FileLogger;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -18,11 +20,12 @@ public class TransactionService {
     private AccountDAO accountDAO = new AccountDAO();
     private TransactionDAO txnDAO = new TransactionDAO();
     private AuditLogDAO auditLogDAO = new AuditLogDAO();
+    private FileLogger fileLogger = FileLogger.getInstance();
     private DBConnection getDbConnection() {
         return DBConnection.getInstance();
     }
 
-    public void deposit(int accId, BigDecimal amount) throws BankException{
+    public void deposit(User currentUser, int accId, BigDecimal amount) throws BankException{
 
         if(amount.compareTo(BigDecimal.ZERO) <= 0)
             throw new BankException("Invalid amount");
@@ -37,6 +40,7 @@ public class TransactionService {
             if (account == null) {
                 throw new BankException("Account not found");
             }
+            validateOwnership(currentUser, account);
 
             BigDecimal newBalance = account.getBalance().add(amount);
 
@@ -53,6 +57,8 @@ public class TransactionService {
             txnDAO.insert(txn, conn);
 
             conn.commit();
+        } catch (SecurityException e) {
+            throw e;
         } catch (Exception e) {
             try {conn.rollback();} catch (Exception ex) {}
                 throw new BankException("Deposit Failed",e);
@@ -63,7 +69,7 @@ public class TransactionService {
 
     }
 
-    public void withdraw(int accId, BigDecimal amount) throws BankException {
+    public void withdraw(User currentUser, int accId, BigDecimal amount) throws BankException {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BankException("Invalid amount");
         }
@@ -77,6 +83,7 @@ public class TransactionService {
             if (account == null) {
                 throw new BankException("Account not found");
             }
+            validateOwnership(currentUser, account);
             if (account.getBalance().compareTo(amount) < 0) {
                 throw new BankException("Insufficient balance");
             }
@@ -94,6 +101,8 @@ public class TransactionService {
 
             txnDAO.insert(txn, conn);
             conn.commit();
+        } catch (SecurityException e) {
+            throw e;
         } catch (Exception e) {
             try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
             throw new BankException("Withdrawal failed", e);
@@ -103,7 +112,7 @@ public class TransactionService {
         }
     }
 
-    public void transfer(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description) throws BankException {
+    public void transfer(User currentUser, String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description) throws BankException {
         if (fromAccountNumber == null || toAccountNumber == null || fromAccountNumber.isBlank() || toAccountNumber.isBlank()) {
             throw new BankException("Account numbers are required");
         }
@@ -125,6 +134,8 @@ public class TransactionService {
             if (from == null || to == null) {
                 throw new BankException("Account not found");
             }
+            // Transfer is allowed only from the logged-in user's own account.
+            validateOwnership(currentUser, from);
             if (from.getBalance().compareTo(amount) < 0) {
                 throw new BankException("Insufficient balance");
             }
@@ -146,6 +157,8 @@ public class TransactionService {
 
             txnDAO.insert(txn, conn);
             conn.commit();
+        } catch (SecurityException e) {
+            throw e;
         } catch (Exception e) {
             try { if (conn != null) conn.rollback(); } catch (Exception ignored) {}
             throw new BankException("Transfer failed", e);
@@ -155,8 +168,13 @@ public class TransactionService {
         }
     }
 
-    public List<Transaction> getTransactions(int accountId, LocalDate from, LocalDate to) throws BankException {
+    public List<Transaction> getTransactions(User currentUser, int accountId, LocalDate from, LocalDate to) throws BankException {
         try {
+            Account account = accountDAO.findById(accountId);
+            if (account == null) {
+                throw new BankException("Account not found");
+            }
+            validateOwnership(currentUser, account);
             return txnDAO.findByAccountId(accountId, from, to, null);
         } catch (Exception e) {
             throw new BankException("Failed to fetch transactions", e);
@@ -165,6 +183,23 @@ public class TransactionService {
 
     private String generateReference() {
         return "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private void validateOwnership(User currentUser, Account account) throws BankException {
+        if (currentUser == null) {
+            throw new BankException("Not logged in");
+        }
+        if (account.getUserId() != currentUser.getUserId()) {
+            fileLogger.log(
+                    currentUser.getUserId(),
+                    "UNAUTHORIZED_ACCESS",
+                    "ACCOUNT",
+                    account.getAccountId(),
+                    "N/A",
+                    "User tried to access another user's account"
+            );
+            throw new SecurityException("Unauthorized access");
+        }
     }
 
 

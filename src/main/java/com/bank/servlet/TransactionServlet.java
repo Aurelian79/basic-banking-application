@@ -21,7 +21,7 @@ public class TransactionServlet extends BaseServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
 
         try {
-            getSessionUser(req);
+            User currentUser = getSessionUser(req);
 
             String path = req.getPathInfo();
             if (path == null) {
@@ -32,21 +32,21 @@ public class TransactionServlet extends BaseServlet {
                 int accountId = Integer.parseInt(req.getParameter("accountId"));
                 LocalDate from = LocalDate.parse(req.getParameter("from"));
                 LocalDate to = LocalDate.parse(req.getParameter("to"));
-                sendJson(resp, 200, service.getTransactions(accountId, from, to));
+                sendJson(resp, 200, service.getTransactions(currentUser, accountId, from, to));
 
             } else if ("/deposit".equals(path)) {
                 DepositReq dto = parseJson(readBody(req), DepositReq.class);
-                service.deposit(dto.accountId, dto.amount);
+                service.deposit(currentUser, dto.accountId, dto.amount);
                 sendJson(resp, 200, "Deposited");
 
             } else if ("/withdraw".equals(path)) {
                 DepositReq dto = parseJson(readBody(req), DepositReq.class);
-                service.withdraw(dto.accountId, dto.amount);
+                service.withdraw(currentUser, dto.accountId, dto.amount);
                 sendJson(resp, 200, "Withdrawn");
 
             } else if ("/transfer".equals(path)) {
                 TransferReq dto = parseJson(readBody(req), TransferReq.class);
-                service.transfer(dto.fromAccountNumber, dto.toAccountNumber, dto.amount, dto.description);
+                service.transfer(currentUser, dto.fromAccountNumber, dto.toAccountNumber, dto.amount, dto.description);
                 sendJson(resp, 200, "Transferred");
 
             } else {

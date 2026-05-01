@@ -5,6 +5,8 @@ import com.bank.dao.TransactionDAO;
 import com.bank.exception.BankException;
 import com.bank.model.Account;
 import com.bank.model.Transaction;
+import com.bank.model.User;
+import com.bank.util.FileLogger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,6 +37,7 @@ public class ReportService {
 
     private TransactionDAO txnDAO       = new TransactionDAO();
     private AccountDAO     accountDAO   = new AccountDAO();
+    private FileLogger fileLogger = FileLogger.getInstance();
 
     private static final String REPORT_DIR = "logs/reports/";
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -58,8 +61,14 @@ public class ReportService {
      *
      * @return absolute file path of the generated CSV
      */
-    public String generateStatement(int accountId, LocalDate from, LocalDate to)
+    public String generateStatement(User currentUser, int accountId, LocalDate from, LocalDate to)
             throws BankException {
+
+        Account account = accountDAO.findById(accountId);
+        if (account == null) {
+            throw new BankException("Account not found");
+        }
+        validateOwnership(currentUser, account);
 
         // ── 1. Ensure output directory exists ──────────────────────────────
         File dir = new File(REPORT_DIR);
@@ -238,5 +247,19 @@ public class ReportService {
         // Wrap in quotes if value contains comma or newline
         if (s.contains(",") || s.contains("\n")) return "\"" + s.replace("\"", "\"\"") + "\"";
         return s;
+    }
+
+    private void validateOwnership(User currentUser, Account account) {
+        if (account.getUserId() != currentUser.getUserId()) {
+            fileLogger.log(
+                    currentUser.getUserId(),
+                    "UNAUTHORIZED_ACCESS",
+                    "ACCOUNT",
+                    account.getAccountId(),
+                    "N/A",
+                    "User tried to download statement for another user's account"
+            );
+            throw new SecurityException("Unauthorized access");
+        }
     }
 }

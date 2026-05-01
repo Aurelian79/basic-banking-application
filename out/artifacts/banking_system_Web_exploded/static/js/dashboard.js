@@ -9,6 +9,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', init);
+  let userAccounts = [];
 
   window.showSection = showSection;
   window.handleOpenAccount = handleOpenAccount;
@@ -26,6 +27,7 @@
     text('topbarUser', user.fullName || user.email);
     text('welcomeText', `Welcome, ${firstName(user)}`);
     setDefaultReportDates();
+    loadUserAccountOptions();
     loadOverview();
   }
 
@@ -47,6 +49,8 @@
   async function loadOverview() {
     try {
       const accounts = await api('/accounts');
+      userAccounts = accounts || [];
+      renderOwnedAccountOptions();
       html('accountCards', accounts.length
         ? accounts.map(renderAccountCard).join('')
         : empty('No accounts found.'));
@@ -72,6 +76,8 @@
 
     try {
       const accounts = await api('/accounts');
+      userAccounts = accounts || [];
+      renderOwnedAccountOptions();
       html('accountsList', accounts.length
         ? accounts.map(renderAccountRow).join('')
         : empty('No accounts found.'));
@@ -101,6 +107,7 @@
 
       message('modalMsg', 'Account opened successfully.', 'success');
       closeModalById('openAccountModal');
+      await loadUserAccountOptions();
       loadOverview();
       loadAccounts();
     } catch (error) {
@@ -117,11 +124,11 @@
   }
 
   async function runQuickAction(path, successText) {
-    const accountId = number('qaAccountId');
+    const accountId = intValue('qaAccountId');
     const amount = number('qaAmount');
 
     if (!accountId || !amount || amount <= 0) {
-      message('qaMsg', 'Enter a valid account ID and amount.', 'error');
+      message('qaMsg', 'Select a valid account and amount.', 'error');
       return;
     }
 
@@ -137,7 +144,7 @@
 
   async function handleTransfer() {
     const payload = {
-      fromAccountNumber: trimmed('txFrom'),
+      fromAccountNumber: value('txFromAccount'),
       toAccountNumber: trimmed('txTo'),
       amount: number('txAmount'),
       description: trimmed('txDesc')
@@ -159,7 +166,7 @@
 
   async function handleLoanApply() {
     const payload = {
-      accountId: number('lnAccount'),
+      accountId: intValue('lnAccount'),
       amount: number('lnAmount'),
       months: number('lnMonths')
     };
@@ -368,5 +375,38 @@
 
   function number(id) {
     return Number.parseFloat(value(id));
+  }
+
+  function intValue(id) {
+    return Number.parseInt(value(id), 10);
+  }
+
+  async function loadUserAccountOptions() {
+    try {
+      userAccounts = await api('/accounts');
+      renderOwnedAccountOptions();
+    } catch (error) {
+      message('qaMsg', error.message, 'error');
+    }
+  }
+
+  function renderOwnedAccountOptions() {
+    fillSelect('qaAccountId', userAccounts, true);
+    fillSelect('lnAccount', userAccounts, true);
+    fillSelect('rptAccount', userAccounts, false);
+    fillSelect('txFromAccount', userAccounts, true, true);
+  }
+
+  function fillSelect(id, accounts, includePlaceholder, useAccountNumber) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const placeholder = includePlaceholder ? '<option value="">Select account</option>' : '';
+    const options = (accounts || []).map((account) => {
+      const value = useAccountNumber ? account.accountNumber : account.accountId;
+      return `<option value="${value}">${account.accountNumber} (${account.accountType})</option>`;
+    }).join('');
+
+    el.innerHTML = placeholder + options;
   }
 })();

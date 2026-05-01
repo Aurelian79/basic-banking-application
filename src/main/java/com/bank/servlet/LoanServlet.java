@@ -31,7 +31,7 @@ public class LoanServlet extends BaseServlet {
             } else if ("/apply".equals(path)) {
                 Req dto = parseJson(readBody(req), Req.class);
                 sendJson(resp, 201,
-                        service.apply(user.getUserId(), dto.accountId, dto.amount, dto.months));
+                        service.apply(user, dto.accountId, dto.amount, dto.months));
 
             } else {
                 sendError(resp, 404, "Invalid route");
