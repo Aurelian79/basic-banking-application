@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VaultX</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    .auth-box {
+      width: min(100%, 360px);
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 24px;
+    }
+
+    .tab-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab,
+    .btn-primary {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .tab.active {
+      background: #e8f0ff;
+      border-color: #4a79ff;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
+    .form-title {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .form-subtitle {
+      margin-bottom: 16px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .msg.error,
+    .msg.success {
+      display: block;
+    }
+
+    .msg.error {
+      background: #fdeaea;
+      color: #a12626;
+    }
+
+    .msg.success {
+      background: #e8f7e8;
+      color: #1f6b1f;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <h1>VaultX</h1>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div class="form-section active" id="loginSection">
+      <h2 class="form-title">Login</h2>
+      <p class="form-subtitle">Sign in to continue.</p>
+
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" />
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" />
+      </div>
+
+      <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Sign In</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <div class="form-section" id="registerSection">
+      <h2 class="form-title">Register</h2>
+      <p class="form-subtitle">Create a new account.</p>
+
+      <div class="field">
+        <label for="regName">Full Name</label>
+        <input type="text" id="regName" />
+      </div>
+
+      <div class="field">
+        <label for="regEmail">Email</label>
+        <input type="email" id="regEmail" />
+      </div>
+
+      <div class="field">
+        <label for="regPhone">Phone</label>
+        <input type="tel" id="regPhone" />
+      </div>
+
+      <div class="field">
+        <label for="regPassword">Password</label>
+        <input type="password" id="regPassword" />
+      </div>
+
+      <button class="btn-primary" id="registerBtn" onclick="handleRegister()">Create Account</button>
+      <div class="msg" id="registerMsg"></div>
+    </div>
+  </div>
+
+  <script src="./js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VaultX Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>VaultX</h1>
+      <button class="nav-item active" data-section="overview" onclick="showSection('overview')">Overview</button>
+      <button class="nav-item" data-section="accounts" onclick="showSection('accounts')">Accounts</button>
+      <button class="nav-item" data-section="transfer" onclick="showSection('transfer')">Transfer</button>
+      <button class="nav-item" data-section="loans" onclick="showSection('loans')">Loans</button>
+      <button class="nav-item" data-section="reports" onclick="showSection('reports')">Reports</button>
+      <button class="nav-item" onclick="handleLogout()">Sign out</button>
+    </aside>
+
+    <main class="content">
+      <header class="page-header">
+        <div>
+          <h2 id="sectionTitle">Overview</h2>
+          <p id="welcomeText">Welcome back</p>
+        </div>
+        <div id="topbarUser" class="muted"></div>
+      </header>
+
+      <section class="section active" id="overview">
+        <div id="accountCards" class="card-grid">
+          <div class="placeholder">Loading...</div>
+        </div>
+        <div class="panel">
+          <h3>Recent transactions</h3>
+          <div id="recentTxns">
+            <div class="placeholder">Loading...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="accounts">
+        <div class="panel">
+          <div class="panel-top">
+            <h3>Accounts</h3>
+            <button onclick="showModal('openAccountModal')">Open account</button>
+          </div>
+          <div id="accountsList"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Quick actions</h3>
+          <div class="form-grid">
+            <label>
+              <span>Account ID</span>
+              <input id="qaAccountId" type="number" />
+            </label>
+            <label>
+              <span>Amount</span>
+              <input id="qaAmount" type="number" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button onclick="handleDeposit()">Deposit</button>
+            <button onclick="handleWithdraw()">Withdraw</button>
+          </div>
+          <div class="msg" id="qaMsg"></div>
+        </div>
+      </section>
+
+      <section class="section" id="transfer">
+        <div class="panel">
+          <h3>Transfer</h3>
+          <div class="form-grid">
+            <label>
+              <span>From account number</span>
+              <input id="txFrom" />
+            </label>
+            <label>
+              <span>To account number</span>
+              <input id="txTo" />
+            </label>
+            <label>
+              <span>Amount</span>
+              <input id="txAmount" type="number" />
+            </label>
+            <label>
+              <span>Description</span>
+              <input id="txDesc" />
+            </label>
+          </div>
+          <button onclick="handleTransfer()">Transfer</button>
+          <div class="msg" id="txMsg"></div>
+        </div>
+      </section>
+
+      <section class="section" id="loans">
+        <div class="panel">
+          <h3>Apply for loan</h3>
+          <div class="form-grid">
+            <label>
+              <span>Account ID</span>
+              <input id="lnAccount" type="number" />
+            </label>
+            <label>
+              <span>Amount</span>
+              <input id="lnAmount" type="number" />
+            </label>
+            <label>
+              <span>Months</span>
+              <input id="lnMonths" type="number" />
+            </label>
+          </div>
+          <button onclick="handleLoanApply()">Apply</button>
+          <div class="msg" id="lnMsg"></div>
+        </div>
+
+        <div class="panel">
+          <h3>My loans</h3>
+          <div id="loansList">
+            <div class="placeholder">Loading...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="reports">
+        <div class="panel">
+          <h3>Statement</h3>
+          <div class="form-grid">
+            <label>
+              <span>Account ID</span>
+              <input id="rptAccount" type="number" />
+            </label>
+            <label>
+              <span>From</span>
+              <input id="rptFrom" type="date" />
+            </label>
+            <label>
+              <span>To</span>
+              <input id="rptTo" type="date" />
+            </label>
+          </div>
+          <button onclick="handleReport()">Download CSV</button>
+          <div class="msg" id="rptMsg"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="openAccountModal" onclick="closeModal(event, 'openAccountModal')">
+    <div class="modal">
+      <h3>Open account</h3>
+      <label>
+        <span>Account type</span>
+        <select id="newAccType">
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+          <option value="FIXED_DEPOSIT">Fixed deposit</option>
+        </select>
+      </label>
+      <button onclick="handleOpenAccount()">Create</button>
+      <div class="msg" id="modalMsg"></div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+package com.bank.servlet;
+
+import com.bank.exception.BankException;
+import com.bank.model.User;
+import com.google.gson.Gson;
+
+import jakarta.servlet.http.*;
+import java.io.*;
+
+public class BaseServlet extends HttpServlet {
+
+    protected Gson gson = new Gson();
+
+    protected String readBody(HttpServletRequest req) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = req.getReader();
+        String line;
+        while ((line = br.readLine()) != null) sb.append(line);
+        return sb.toString();
+    }
+
+    protected <T> T parseJson(String body, Class<T> clazz) throws BankException {
+        try {
+            return gson.fromJson(body, clazz);
+        } catch (Exception e) {
+            throw new BankException("Invalid JSON");
+        }
+    }
+
+    protected void sendJson(HttpServletResponse resp, int status, Object obj) throws IOException {
+        resp.setStatus(status);
+        resp.getWriter().write(gson.toJson(obj));
+    }
+
+    protected void sendError(HttpServletResponse resp, int status, String msg) throws IOException {
+        resp.setStatus(status);
+        resp.getWriter().write("{\"error\":\"" + msg + "\"}");
+    }
+
+    protected User getSessionUser(HttpServletRequest req) throws BankException {
+        HttpSession session = req.getSession(false);
+        if (session == null) throw new BankException("Not logged in");
+
+        User user = (User) session.getAttribute("currentUser");
+        if (user == null) throw new BankException("Not logged in");
+
+        return user;
+    }
+}
