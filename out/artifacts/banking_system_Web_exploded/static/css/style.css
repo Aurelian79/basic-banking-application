@@ -129,20 +129,27 @@ label span,
 }
 
 .form-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 label {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 input,
 select {
+  width: 100%;
+  min-width: 0;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
   background: #fff;
+}
+
+.transfer-grid {
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
 }
 
 .list-row {
@@ -221,5 +228,9 @@ select {
 
   .right {
     text-align: left;
+  }
+
+  .transfer-grid {
+    grid-template-columns: 1fr;
   }
 }
