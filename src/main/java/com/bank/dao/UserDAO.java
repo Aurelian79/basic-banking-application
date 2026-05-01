@@ -108,6 +108,10 @@ public class UserDAO {
         }
     }
 
+    public User getUserById(int userId) throws BankException {
+        return findById(userId);
+    }
+
 
 
     private User mapRow(ResultSet resultSet) throws SQLException {

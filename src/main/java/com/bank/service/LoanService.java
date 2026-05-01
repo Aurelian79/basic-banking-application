@@ -10,6 +10,7 @@ import com.bank.model.User;
 import com.bank.util.FileLogger;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class LoanService {
@@ -22,6 +23,9 @@ public class LoanService {
 
             if (amount.compareTo(BigDecimal.ZERO) <= 0)
                 throw new BankException("Invalid amount");
+            if (months <= 0) {
+                throw new BankException("Invalid tenure months");
+            }
 
             Account account = accountDAO.findById(accId);
             if (account == null) {
@@ -34,6 +38,10 @@ public class LoanService {
             loan.setAccountId(accId);
             loan.setLoanAmount(amount);
             loan.setTenureMonths(months);
+            BigDecimal interestRate = resolveInterestRate(months);
+            int emiAmount = calculateEmi(amount, interestRate, months);
+            loan.setInterestRate(interestRate);
+            loan.setEmiAmount(emiAmount);
 
             loanDAO.apply(loan);
             return loan;
@@ -55,6 +63,25 @@ public class LoanService {
                 );
                 throw new SecurityException("Unauthorized access");
             }
+        }
+
+        private BigDecimal resolveInterestRate(int months) {
+            if (months <= 12) return new BigDecimal("10.00");
+            if (months <= 36) return new BigDecimal("11.00");
+            return new BigDecimal("12.00");
+        }
+
+        private int calculateEmi(BigDecimal principal, BigDecimal annualRatePct, int months) {
+            BigDecimal monthlyRate = annualRatePct
+                    .divide(new BigDecimal("1200"), 10, RoundingMode.HALF_UP);
+
+            BigDecimal onePlusRPowerN = BigDecimal.ONE.add(monthlyRate).pow(months);
+            BigDecimal numerator = principal.multiply(monthlyRate).multiply(onePlusRPowerN);
+            BigDecimal denominator = onePlusRPowerN.subtract(BigDecimal.ONE);
+
+            return numerator
+                    .divide(denominator, 0, RoundingMode.HALF_UP)
+                    .intValue();
         }
 
     }

@@ -1,14 +1,21 @@
 package com.bank.service;
 
 import com.bank.dao.AuditLogDAO;
+import com.bank.dao.AccountDAO;
 import com.bank.dao.UserDAO;
 import com.bank.exception.BankException;
+import com.bank.model.Account;
 import com.bank.model.AuditLog;
 import com.bank.model.User;
 import com.bank.util.PasswordUtil;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class AuthService {
     private UserDAO userDAO = new UserDAO();
+    private AccountDAO accountDAO = new AccountDAO();
     private AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     public User register(String name,String email,String phone,String password) throws BankException {
@@ -68,5 +75,23 @@ public class AuthService {
         log.setAction("LOGOUT");
         log.setDetails("User logged out");
         auditLogDAO.log(log);
+    }
+
+    public Map<String, Object> getProfileOverview(int userId) throws BankException {
+        User user = userDAO.getUserById(userId);
+        if (user == null) {
+            throw new BankException("User not found");
+        }
+        user.setPasswordHash(null);
+
+        List<Account> accounts = accountDAO.findUserById(userId);
+
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("userId", user.getUserId());
+        profile.put("name", user.getFullName());
+        profile.put("email", user.getEmail());
+        profile.put("phone", user.getPhone());
+        profile.put("accounts", accounts);
+        return profile;
     }
 }

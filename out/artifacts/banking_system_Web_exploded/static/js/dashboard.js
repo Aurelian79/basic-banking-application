@@ -2,6 +2,7 @@
   const API_BASE = window.API_BASE || '/banking-system/api';
   const TITLES = {
     overview: 'Overview',
+    profile: 'Profile',
     accounts: 'Accounts',
     transfer: 'Transfer',
     loans: 'Loans',
@@ -43,7 +44,54 @@
     text('sectionTitle', TITLES[name] || 'Dashboard');
 
     if (name === 'accounts') loadAccounts();
+    if (name === 'profile') loadProfile();
     if (name === 'loans') loadLoans();
+  }
+
+  async function loadProfile() {
+    html('profileOverview', loading());
+    try {
+      const profile = await api('/auth/profile');
+      const rows = (profile.accounts || []).map((acc) => `
+        <tr>
+          <td>${acc.accountId}</td>
+          <td>${acc.accountType}</td>
+          <td>Rs. ${money(acc.balance)}</td>
+        </tr>
+      `).join('');
+
+      html('profileOverview', `
+        <div class="list-row">
+          <div><strong>User ID:</strong> ${profile.userId}</div>
+        </div>
+        <div class="list-row">
+          <div><strong>Name:</strong> ${profile.name || ''}</div>
+        </div>
+        <div class="list-row">
+          <div><strong>Email:</strong> ${profile.email || ''}</div>
+        </div>
+        <div class="list-row">
+          <div><strong>Phone:</strong> ${profile.phone || ''}</div>
+        </div>
+        <div class="panel" style="margin-top:12px;">
+          <h3>My Accounts</h3>
+          <table style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Account ID</th>
+                <th style="text-align:left;">Account Type</th>
+                <th style="text-align:left;">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows || '<tr><td colspan="3">No accounts found.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      `);
+    } catch (error) {
+      html('profileOverview', errorBox(error.message));
+    }
   }
 
   async function loadOverview() {

@@ -67,6 +67,14 @@ public class AuthServlet extends BaseServlet {
                 req.getSession(false).invalidate();
                 sendJson(resp, 200, "Logged out");
 
+            } else if ("/profile".equals(path)) {
+                if (!"GET".equalsIgnoreCase(req.getMethod())) {
+                    sendError(resp, 405, "Method not allowed");
+                    return;
+                }
+                User currentUser = getSessionUser(req);
+                sendJson(resp, 200, service.getProfileOverview(currentUser.getUserId()));
+
             } else {
                 sendError(resp, 404, "Invalid route");
             }

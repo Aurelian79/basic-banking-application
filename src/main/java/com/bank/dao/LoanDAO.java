@@ -15,7 +15,7 @@ public class LoanDAO {
     }
 
     public int apply(Loan loan) throws BankException {
-        String sql = "INSERT INTO loans (user_id, account_id, loan_amount, interest_rate, tenure_months, status) VALUES (?,?,?,?,?,'PENDING')";
+        String sql = "INSERT INTO loans (user_id, account_id, loan_amount, interest_rate, tenure_months, emi_amount, status) VALUES (?,?,?,?,?,?,'PENDING')";
 
         Connection conn = null;
 
@@ -28,6 +28,7 @@ public class LoanDAO {
             ps.setBigDecimal(3, loan.getLoanAmount());
             ps.setBigDecimal(4, loan.getInterestRate());
             ps.setInt(5, loan.getTenureMonths());
+            ps.setInt(6, loan.getEmiAmount());
 
             ps.executeUpdate();
 

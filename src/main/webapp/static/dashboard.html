@@ -10,6 +10,7 @@
   <div class="layout">
     <aside class="sidebar">
       <h1>VaultX</h1>
+      <button class="nav-item" data-section="profile" onclick="showSection('profile')">Profile</button>
       <button class="nav-item active" data-section="overview" onclick="showSection('overview')">Overview</button>
       <button class="nav-item" data-section="accounts" onclick="showSection('accounts')">Accounts</button>
       <button class="nav-item" data-section="transfer" onclick="showSection('transfer')">Transfer</button>
@@ -34,6 +35,15 @@
         <div class="panel">
           <h3>Recent transactions</h3>
           <div id="recentTxns">
+            <div class="placeholder">Loading...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="profile">
+        <div class="panel">
+          <h3>Profile Overview</h3>
+          <div id="profileOverview">
             <div class="placeholder">Loading...</div>
           </div>
         </div>
@@ -71,7 +81,7 @@
       <section class="section" id="transfer">
         <div class="panel">
           <h3>Transfer</h3>
-          <div class="form-grid">
+          <div class="form-grid transfer-grid">
             <label>
               <span>From my account</span>
               <select id="txFromAccount"></select>
